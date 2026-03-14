@@ -37,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 String email = jwtUtil.extractEmail(token);
                 String role = jwtUtil.extractRole(token);
+                System.out.println("role from token"+role);
                 if(role==null){
                     role="USER";
                 }

@@ -29,4 +29,15 @@ public class BinService {
     public List<Bin> getAllBins(){
         return binRepository.findAll();
     }
+    public Bin collectBin(Long binId){
+
+        Bin bin = binRepository.findById(binId)
+                .orElseThrow(() -> new RuntimeException("Bin not found"));
+
+        bin.setCurrentFill(0);
+        bin.setStatus("NORMAL");
+
+        return binRepository.save(bin);
+    }
+
 }
