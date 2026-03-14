@@ -25,4 +25,9 @@ public class BinController {
     public List<Bin> getBins(){
         return binService.getAllBins();
     }
+    @PutMapping("/collect/{id}")
+    public Bin collectBin(@PathVariable Long id){
+        return binService.collectBin(id);
+    }
+
 }
