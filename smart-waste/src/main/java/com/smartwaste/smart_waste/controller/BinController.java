@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin/bins")
+@CrossOrigin(origins = "http://localhost:5173")
 public class BinController {
 
     private final BinService binService;

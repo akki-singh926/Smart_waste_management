@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/routes")
+@CrossOrigin(origins = "http://localhost:5173")
 public class RouteController {
 
     private final RouteService routeService;

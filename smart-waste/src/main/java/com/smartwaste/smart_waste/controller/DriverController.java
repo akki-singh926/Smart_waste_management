@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/driver")
+@CrossOrigin(origins = "http://localhost:5173")
 public class DriverController {
 
     private final DriverService driverService;
