@@ -1,18 +1,23 @@
 package com.smartwaste.smart_waste.service;
 
 import com.smartwaste.smart_waste.entity.Bin;
+import com.smartwaste.smart_waste.entity.CollectionLog;
 import com.smartwaste.smart_waste.repository.BinRepository;
+import com.smartwaste.smart_waste.repository.CollectionLogRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class BinService {
 
     private final BinRepository binRepository;
+    private final CollectionLogRepository collectionLogRepository;
 
-    public BinService(BinRepository binRepository){
+    public BinService(BinRepository binRepository, CollectionLogRepository collectionLogRepository){
         this.binRepository = binRepository;
+        this.collectionLogRepository=collectionLogRepository;
     }
 
     public Bin createBin(Bin bin){
@@ -36,6 +41,14 @@ public class BinService {
 
         bin.setCurrentFill(0);
         bin.setStatus("NORMAL");
+
+        // Create collection log
+        CollectionLog log = new CollectionLog();
+        log.setBinId(bin.getId());
+        log.setTruckId(1L); // temporary for now
+        log.setCollectedAt(LocalDateTime.now());
+
+        collectionLogRepository.save(log);
 
         return binRepository.save(bin);
     }
