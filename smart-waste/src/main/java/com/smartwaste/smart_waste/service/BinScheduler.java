@@ -17,7 +17,7 @@ public class BinScheduler {
         this.binRepository = binRepository;
     }
 
-    @Scheduled(fixedRate = 100000000) // every 10 seconds
+    @Scheduled(fixedRate = 1000000) // every 10 seconds
     public void simulateBinFill(){
 
         List<Bin> bins = binRepository.findAll();

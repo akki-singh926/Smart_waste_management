@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface BinRepository extends JpaRepository<Bin, Long> {
     List<Bin> findByStatus(String needsPickup);
+
 }
