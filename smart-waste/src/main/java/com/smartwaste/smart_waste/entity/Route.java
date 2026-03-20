@@ -12,6 +12,25 @@ public class Route {
     private Long truckId;
 
     private String orderedBinIds;
+    private String orderedNumericIds;
+    @Column(length = 1000)
+    private String orderedCoordinates;
+
+    public String getOrderedCoordinates() {
+        return orderedCoordinates;
+    }
+
+    public void setOrderedCoordinates(String orderedCoordinates) {
+        this.orderedCoordinates = orderedCoordinates;
+    }
+
+    public String getOrderedNumericIds() {
+        return orderedNumericIds;
+    }
+
+    public void setOrderedNumericIds(String orderedNumericIds) {
+        this.orderedNumericIds = orderedNumericIds;
+    }
 
     private double estimatedDistance;
 
