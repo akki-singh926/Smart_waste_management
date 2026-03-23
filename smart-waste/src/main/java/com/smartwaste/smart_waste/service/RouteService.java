@@ -3,13 +3,16 @@ package com.smartwaste.smart_waste.service;
 import com.smartwaste.smart_waste.entity.Bin;
 import com.smartwaste.smart_waste.entity.Route;
 import com.smartwaste.smart_waste.entity.Truck;
+import com.smartwaste.smart_waste.entity.User;
 import com.smartwaste.smart_waste.repository.BinRepository;
 import com.smartwaste.smart_waste.repository.RouteRepository;
 import com.smartwaste.smart_waste.repository.TruckRepository;
+import com.smartwaste.smart_waste.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,15 +22,22 @@ public class RouteService {
     private final BinRepository binRepository;
     private final TruckRepository truckRepository;
     private final RouteRepository routeRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService; // ✅ inject this
 
     public RouteService(BinRepository binRepository,
                         TruckRepository truckRepository,
-                        RouteRepository routeRepository) {
+                        RouteRepository routeRepository,
+                        UserRepository userRepository,
+                        EmailService emailService) { // ✅ FIXED constructor
 
         this.binRepository = binRepository;
         this.truckRepository = truckRepository;
         this.routeRepository = routeRepository;
+        this.userRepository = userRepository;
+        this.emailService = emailService;
     }
+
     private double calculateDistance(double lat1, double lon1,
                                      double lat2, double lon2) {
 
@@ -38,6 +48,7 @@ public class RouteService {
     }
 
     public Route generateRoute(){
+
         List<Bin> bins = binRepository.findByStatus("NEEDS_PICKUP");
 
         if(bins.isEmpty()){
@@ -47,12 +58,21 @@ public class RouteService {
             );
         }
 
-        Truck truck = truckRepository.findAll().get(0);
+        // ✅ Select least loaded truck
+        Truck truck = truckRepository.findAllByOrderByCurrentLoadAsc().get(0);
+
+        // ✅ Update load (dummy for now)
+        truck.setCurrentLoad(truck.getCurrentLoad() + 50);
+        truckRepository.save(truck);
+
+        Route route = new Route();
+        route.setTruckId(truck.getId());
+        route.setDriverId(truck.getDriverId());
 
         double currentLat = 0;
         double currentLon = 0;
 
-        List<Bin> orderedBins = new java.util.ArrayList<>();
+        List<Bin> orderedBins = new ArrayList<>();
 
         while(!bins.isEmpty()){
             Bin nearest = null;
@@ -78,30 +98,37 @@ public class RouteService {
             bins.remove(nearest);
         }
 
-        // 1. String for Driver Display (e.g., "BIN001 -> BIN2")
+        // ✅ Human-readable route
         String routeString = orderedBins.stream()
                 .map(Bin::getBinId)
                 .collect(Collectors.joining(" -> "));
 
-        // 2. NEW: String for Database IDs (e.g., "1 -> 3")
+        // ✅ Numeric IDs
         String numericIdString = orderedBins.stream()
                 .map(bin -> String.valueOf(bin.getId()))
                 .collect(Collectors.joining(" -> "));
+
+        // ✅ Coordinates
         String coordinateString = orderedBins.stream()
                 .map(bin -> bin.getLatitude() + "," + bin.getLongitude())
                 .collect(Collectors.joining(" -> "));
 
-
-        Route route = new Route();
-        route.setTruckId(truck.getId());
         route.setOrderedBinIds(routeString);
-
-        // 3. NEW: Populate the field you already have in your Route entity
         route.setOrderedNumericIds(numericIdString);
         route.setOrderedCoordinates(coordinateString);
-
         route.setEstimatedDistance(orderedBins.size() * 2);
         route.setStatus("ASSIGNED");
+
+        // ✅ Fetch driver safely
+        User driver = userRepository.findById(truck.getDriverId())
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+        // ✅ Send email
+        emailService.sendEmail(
+                driver.getEmail(),
+                "Route Assigned",
+                "Hello,\n\nYou have been assigned a new route:\n\n" + routeString
+        );
 
         return routeRepository.save(route);
     }

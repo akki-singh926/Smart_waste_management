@@ -11,6 +11,16 @@ public class Route {
 
     private Long truckId;
 
+    public Long getDriverId() {
+        return driverId;
+    }
+
+    public void setDriverId(Long driverId) {
+        this.driverId = driverId;
+    }
+
+    private Long driverId;
+
     private String orderedBinIds;
     private String orderedNumericIds;
     @Column(length = 1000)
